@@ -47,9 +47,9 @@
         </h2>
 
         <table id="tabla" class="display" style="width:100%">
-            <tfoot>
-                <tr id="filtros"></tr>
-            </tfoot>
+            <thead><tr id="encabezados"></tr></thead>
+            <tbody></tbody>
+            <tfoot><tr id="filtros"></tr></tfoot>
         </table>
     </div>
 
@@ -62,30 +62,36 @@
         Papa.parse("data.csv", {
             download: true,
             header: true,
+            skipEmptyLines: true,
             complete: function(results) {
 
-                // Crear columnas automáticas
-                let columnas = Object.keys(results.data[0]).map(col => ({
+                let data = results.data;
+
+                // Evitar fallos si hay filas vacías
+                data = data.filter(row => Object.values(row).some(v => v !== ""));
+
+                let columnas = Object.keys(data[0]).map(col => ({
                     title: col,
                     data: col
                 }));
 
-                // Crear filtros (inputs) en el footer
+                // Crear encabezados
                 columnas.forEach(col => {
-                    $("#filtros").append(`<th><input type="text" placeholder="Filtrar ${col}" /></th>`);
+                    $("#encabezados").append(`<th>${col.title}</th>`);
+                    $("#filtros").append(`<th><input type="text" placeholder="Filtrar ${col.title}"></th>`);
                 });
 
                 // Inicializar DataTable
                 let tabla = $('#tabla').DataTable({
-                    data: results.data,
+                    data: data,
                     columns: columnas,
                     pageLength: 100,
                     language: { 
-                        url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json" 
+                        url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
                     }
                 });
 
-                // Activar filtros por columna
+                // Filtros por columna
                 tabla.columns().every(function() {
                     let that = this;
 
@@ -95,9 +101,11 @@
                         }
                     });
                 });
+
             }
         });
     </script>
 
 </body>
 </html>
+
