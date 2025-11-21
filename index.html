@@ -1,56 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listado STDI</title>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+
+    <!-- DataTables -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+
+    <!-- PapaParse -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background: #ffffff;
+        }
+
+        .header {
+            background: #ffffff;
+            padding: 20px;
+        }
+
+        .logo {
+            max-width: 260px;
+            display: block;
+        }
+
+        .container {
+            background: #0d3c78;
+            padding: 25px;
+            border-radius: 10px;
+            color: white;
+            margin: 20px;
+        }
+
+        table.dataTable thead th {
+            color: white !important;
+            background: #0d3c78 !important;
+        }
+
+        table.dataTable {
+            background: white !important;
+            color: black !important;
+        }
+
+        select {
+            width: 100%;
+            padding: 5px;
+            color: red !important;
+        }
+
+        tfoot th {
+            background: #0d3c78;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <img src="logo.png" class="logo" alt="Logo STDI">
+    </div>
+
+    <div class="container">
+        <h2>
+            Listado: Coordinadores CCE, Delegados del 1-4,<br>
+            Seguridad Electoral, Transporte y Movilidad del Voto
+        </h2>
+
+        <table id="tabla" class="display" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Territorio</th>
+                    <th>Region</th>
+                    <th>Tipo</th>
+                    <th>Recinto</th>
+                    <th>Colegio</th>
+                    <th>Cargo</th>
+                    <th>Nombre</th>
+                </tr>
+            </thead>
+
+            <tfoot>
+                <tr id="filtros"></tr>
+            </tfoot>
+
+            <tbody></tbody>
+        </table>
+    </div>
+
 <script>
-    Papa.parse("data.csv", {
-        download: true,
-        header: true,
-        skipEmptyLines: true,   // ⭐ ELIMINA FILAS VACÍAS
-        complete: function(results) {
+Papa.parse("data.csv", {
+    download: true,
+    header: true,
+    skipEmptyLines: true,
+    complete: function(results) {
 
-            // ⭐ LIMPIA FILAS INCOMPLETAS
-            let cleanData = results.data.filter(row =>
-                Object.values(row).some(v => v !== null && v !== "")
-            );
+        // ⭐ limpiar filas vacías o incompletas
+        let cleanData = results.data.filter(row =>
+            Object.values(row).some(v => v !== null && v !== "")
+        );
 
-            // Crear columnas automáticas
-            let columnas = Object.keys(cleanData[0]).map(col => ({
+        // ⭐ agregar un índice para mantener orden original
+        cleanData = cleanData.map((row, idx) => ({ ...row, _ordenCSV: idx }));
+
+        // Crear columnas automáticas
+        let columnas = Object.keys(cleanData[0])
+            .filter(c => c !== "_ordenCSV")
+            .map(col => ({
                 title: col,
                 data: col
             }));
 
-            // Generar selects en el footer solo para T, R, y Re
-            const filtros = ["Territorio", "Region", "Recinto"];
+        // filtros deseados
+        const filtros = ["Territorio", "Region", "Recinto"];
 
-            $("#filtros").empty();
-            columnas.forEach(col => {
-                if (filtros.includes(col.title)) {
-                    $("#filtros").append(`<th><select id="f_${col.title}"><option value="">(todos)</option></select></th>`);
-                } else {
-                    $("#filtros").append(`<th></th>`);
-                }
+        // Crear los select del footer
+        $("#filtros").empty();
+        columnas.forEach(col => {
+            if (filtros.includes(col.title)) {
+                $("#filtros").append(`
+                    <th>
+                        <select id="f_${col.title}">
+                            <option value="">(todos)</option>
+                        </select>
+                    </th>
+                `);
+            } else {
+                $("#filtros").append(`<th></th>`);
+            }
+        });
+
+        // ⭐ Inicializar DataTable SIN ordenar nada
+        let tabla = $('#tabla').DataTable({
+            data: cleanData,
+            columns: columnas,
+            pageLength: 10,
+            ordering: false, // ⭐ mantiene orden del CSV
+            language: {
+                url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+            }
+        });
+
+        // ⭐ poblar selects
+        filtros.forEach((campo) => {
+            let select = document.getElementById("f_" + campo);
+            let colIndex = columnas.findIndex(c => c.title === campo);
+
+            tabla.column(colIndex).data().unique().sort().each(function (d) {
+                if (d && d.trim() !== "")
+                    select.insertAdjacentHTML("beforeend", `<option value="${d}">${d}</option>`);
             });
 
-            // Inicializar DataTable
-            let tabla = $('#tabla').DataTable({
-                data: cleanData,
-                columns: columnas,
-                pageLength: 10,
-                language: {
-                    url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
-                }
+            // aplicar filtro sin alterar orden
+            select.addEventListener("change", function () {
+                tabla.column(colIndex).search(this.value).draw(false);
             });
+        });
 
-            // Poblar selects con valores únicos
-            filtros.forEach((campo, index) => {
-                let select = document.getElementById("f_" + campo);
-
-                tabla.column(index).data().unique().sort().each(function (d) {
-                    if (d && d.trim() !== "")
-                        select.insertAdjacentHTML("beforeend", `<option value="${d}">${d}</option>`);
-                });
-
-                select.addEventListener("change", function () {
-                    tabla.column(index).search(this.value).draw();
-                });
-            });
-        }
-    });
+    }
+});
 </script>
+
+</body>
+</html>
