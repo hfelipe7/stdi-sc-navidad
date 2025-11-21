@@ -1,56 +1,58 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Listado STDI</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Listado STDI</title>
 
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
-    <!-- DataTables -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<!-- DataTables -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
-    <!-- Botones PDF -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
-    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+<!-- Buttons & PDF -->
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
 
-    <!-- PapaParse -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<!-- PapaParse -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
-    <style>
-        body { font-family: Arial; margin: 0; background: #ffffff; }
-
-        .header { background: #ffffff; padding: 20px; }
-        .logo { max-width: 280px; }
-
-        .container {
-            background: #0d3c78;
-            padding: 25px;
-            border-radius: 10px;
-            color: white;
-            margin: 20px;
-        }
-
-        select {
-            padding: 6px;
-            width: 210px;
-            border-radius: 4px;
-        }
-
-        .btn-red { background: #e74c3c; color: white; padding: 8px 14px; border: none; border-radius: 4px; cursor: pointer; }
-        .btn-blue { background: #1e70c9; color: white; padding: 8px 14px; border: none; border-radius: 4px; cursor: pointer; }
-
-        table.dataTable tbody tr:hover {
-            background-color: #c7f7c1 !important;
-        }
-
-        th { color: white !important; background: #0d3c78 !important; }
-    </style>
+<style>
+body { font-family: Arial; margin: 0; background: #ffffff; }
+.header { background: #ffffff; padding: 20px; }
+.logo { max-width: 280px; }
+.container {
+    background: #0d3c78;
+    padding: 25px;
+    border-radius: 10px;
+    color: white;
+    margin: 20px;
+}
+select {
+    padding: 6px;
+    width: 210px;
+    border-radius: 4px;
+}
+.btn-red {
+    background: #e74c3c; color: white;
+    padding: 8px 14px; border: none;
+    border-radius: 4px; cursor: pointer;
+}
+.btn-blue {
+    background: #1e70c9; color: white;
+    padding: 8px 14px; border: none;
+    border-radius: 4px; cursor: pointer;
+}
+table.dataTable tbody tr:hover {
+    background-color: #c7f7c1 !important;
+}
+th { color: white !important; background: #0d3c78 !important; }
+</style>
 </head>
 
 <body>
@@ -60,39 +62,39 @@
 </div>
 
 <div class="container">
+<h2>Listado: Coordinadores CCE, Delegados del 1-4,<br>Seguridad Electoral, Transporte y Movilidad del Voto</h2>
 
-    <h2>Listado: Coordinadores CCE, Delegados del 1-4,<br>Seguridad Electoral, Transporte y Movilidad del Voto</h2>
+<!-- FILTROS -->
+<select id="f_territorio"><option value="">Territorio (todos)</option></select>
+<select id="f_region"><option value="">Región (todos)</option></select>
+<select id="f_recinto"><option value="">Recinto (todos)</option></select>
+<select id="f_colegio"><option value="">Colegio (todos)</option></select>
+<select id="f_cargo"><option value="">Cargo (todos)</option></select>
 
-    <!-- FILTROS -->
-    <select id="f_territorio"><option value="">Territorio (todos)</option></select>
-    <select id="f_region"><option value="">Región (todos)</option></select>
-    <select id="f_recinto"><option value="">Recinto (todos)</option></select>
-    <select id="f_colegio"><option value="">Colegio (todos)</option></select>
-    <select id="f_cargo"><option value="">Cargo (todos)</option></select>
+<button id="btn_limpiar" class="btn-red">Limpiar filtros</button>
+<button id="btn_pdf" class="btn-blue">Exportar PDF</button>
 
-    <button id="btn_limpiar" class="btn-red">Limpiar filtros</button>
+<br><br>
 
-    <br><br>
+<table id="tabla" class="display" style="width:100%">
+<thead>
+<tr>
+    <th>Territorio</th>
+    <th>Region</th>
+    <th>Tipo</th>
+    <th>Recinto</th>
+    <th>Colegio</th>
+    <th>Cargo</th>
+    <th>Nombre</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
 
-    <!-- TABLA -->
-    <table id="tabla" class="display" style="width:100%">
-        <thead>
-            <tr>
-                <th>Territorio</th>
-                <th>Region</th>
-                <th>Tipo</th>
-                <th>Recinto</th>
-                <th>Colegio</th>
-                <th>Cargo</th>
-                <th>Nombre</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", function () {
+$(document).ready(function () {
 
     Papa.parse("data.csv", {
         download: true,
@@ -102,25 +104,27 @@ document.addEventListener("DOMContentLoaded", function () {
 
             let data = results.data;
 
-            let tbody = document.querySelector("#tabla tbody");
-            tbody.innerHTML = "";
+            let tbody = $("#tabla tbody");
+            tbody.empty();
 
-            let territorios = new Set();
-            let regiones = new Set();
-            let recintos = new Set();
-            let colegios = new Set();
-            let cargos = new Set();
+            let filtros = {
+                Territorio: new Set(),
+                Region: new Set(),
+                Recinto: new Set(),
+                Colegio: new Set(),
+                Cargo: new Set()
+            };
 
             data.forEach(row => {
                 if (!row.Territorio) return;
 
-                territorios.add(row.Territorio);
-                regiones.add(row.Region);
-                recintos.add(row.Recinto);
-                colegios.add(row.Colegio);
-                cargos.add(row.Cargo);
+                filtros.Territorio.add(row.Territorio);
+                filtros.Region.add(row.Region);
+                filtros.Recinto.add(row.Recinto);
+                filtros.Colegio.add(row.Colegio);
+                filtros.Cargo.add(row.Cargo);
 
-                tbody.innerHTML += `
+                tbody.append(`
                     <tr>
                         <td>${row.Territorio}</td>
                         <td>${row.Region}</td>
@@ -129,56 +133,25 @@ document.addEventListener("DOMContentLoaded", function () {
                         <td>${row.Colegio}</td>
                         <td>${row.Cargo}</td>
                         <td>${row.Nombre}</td>
-                    </tr>`;
+                    </tr>
+                `);
             });
 
-            function llenar(sel, datos) {
-                datos.forEach(v => sel.insertAdjacentHTML("beforeend", `<option value="${v}">${v}</option>`));
+            // Poblar selects
+            for (const k in filtros) {
+                let sel = $("#f_" + k.toLowerCase());
+                filtros[k].forEach(v => sel.append(`<option>${v}</option>`));
             }
 
-            llenar(f_territorio, territorios);
-            llenar(f_region, regiones);
-            llenar(f_recinto, recintos);
-            llenar(f_colegio, colegios);
-            llenar(f_cargo, cargos);
-
+            // Inicializar DataTable DESPUÉS de tener los datos
             let tabla = $('#tabla').DataTable({
                 pageLength: 25,
                 order: [],
-                lengthMenu: [10, 25, 50, 100],
-                language: { url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json" },
-                dom: 'Bfrtip',
-                buttons: [
-                    {
-                        extend: 'pdfHtml5',
-                        text: 'Exportar PDF',
-                        className: 'btn-blue',
-                        title: '',
-                        orientation: 'landscape',
-                        customize: function (doc) {
-
-                            doc.pageMargins = [20, 60, 20, 20];
-
-                            doc.content.unshift({
-                                image: 'data:image/png;base64,' + window.logoBase64,
-                                width: 180,
-                                alignment: 'left',
-                                margin: [0, -20, 0, 10]
-                            });
-
-                            doc.content.unshift({
-                                text: 'Listado STDI — ' + new Date().toLocaleDateString(),
-                                alignment: 'center',
-                                fontSize: 14,
-                                bold: true,
-                                margin: [0, 0, 0, 10]
-                            });
-                        }
-                    }
-                ]
+                language: { url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json" }
             });
 
-            function aplicarFiltros() {
+            // Filtros
+            function aplicar() {
                 tabla.column(0).search($("#f_territorio").val());
                 tabla.column(1).search($("#f_region").val());
                 tabla.column(3).search($("#f_recinto").val());
@@ -187,27 +160,47 @@ document.addEventListener("DOMContentLoaded", function () {
                 tabla.draw();
             }
 
-            $("#f_territorio, #f_region, #f_recinto, #f_colegio, #f_cargo").on("change", aplicarFiltros);
+            $("select").on("change", aplicar);
 
-            $("#btn_limpiar").click(function () {
+            $("#btn_limpiar").click(() => {
                 $("select").val("");
-                tabla.search("").columns().search("").order([]).draw();
+                tabla.search("").columns().search("").draw();
+            });
+
+            // PDF EXPORT
+            $("#btn_pdf").click(function () {
+
+                let fecha = new Date().toLocaleString();
+
+                let doc = {
+                    pageOrientation: "landscape",
+                    content: [
+                        { image: "logo.png", width: 120 },
+                        { text: "Listado STDI", style: "titulo" },
+                        { text: "Generado: " + fecha, style: "fecha" },
+                        {
+                            table: {
+                                headerRows: 1,
+                                widths: ["auto","auto","auto","auto","auto","auto","auto"],
+                                body: [
+                                    ["Territorio","Región","Tipo","Recinto","Colegio","Cargo","Nombre"],
+                                    ...tabla.rows({ search: 'applied' }).data().toArray()
+                                ]
+                            }
+                        }
+                    ],
+                    styles: {
+                        titulo: { fontSize: 18, bold: true, margin: [0,10,0,10] },
+                        fecha: { fontSize: 10, margin: [0,0,0,10] }
+                    }
+                };
+
+                pdfMake.createPdf(doc).download("Listado-STDI.pdf");
             });
 
         }
     });
 
-    // Convertir logo a base64 para usarlo en PDF
-    let logoImg = new Image();
-    logoImg.src = "logo.png";
-    logoImg.onload = function () {
-        let canvas = document.createElement("canvas");
-        canvas.width = logoImg.width;
-        canvas.height = logoImg.height;
-        let ctx = canvas.getContext("2d");
-        ctx.drawImage(logoImg, 0, 0);
-        window.logoBase64 = canvas.toDataURL().split(",")[1];
-    };
 });
 </script>
 
