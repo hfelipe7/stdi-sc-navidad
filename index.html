@@ -8,75 +8,60 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 
     <style>
-    body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        background: #ffffff;
-    }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background: #ffffff;
+        }
 
-    /* Encabezado con logo sobre fondo blanco */
-    .header {
-        background: #ffffff;
-        padding: 20px;
-    }
+        .header {
+            background: #ffffff;
+            padding: 20px;
+        }
 
-    .logo {
-        max-width: 260px;
-        display: block;
-    }
+        .logo {
+            max-width: 260px;
+            display: block;
+        }
 
-    /* Contenedor azul más fuerte con texto blanco */
-    .container {
-        background: #0d3c78;
-        padding: 25px;
-        border-radius: 10px;
-        color: white;
-        margin: 20px;
-    }
+        .container {
+            background: #0d3c78; /* AZUL OSCURO */
+            padding: 25px;
+            border-radius: 10px;
+            color: white;
+            margin: 20px;
+        }
 
-    /* Encabezados de tabla */
-    table.dataTable thead th {
-        color: white !important;
-        background: #0d3c78 !important;
-    }
+        table.dataTable thead th {
+            background: #0d3c78 !important;
+            color: white !important;
+            font-weight: bold;
+        }
 
-    /* Cuerpo de la tabla con fondo blanco */
-    table.dataTable {
-        background: white !important;
-        color: black !important;
-    }
+        table.dataTable {
+            background: white !important;
+            color: black !important;
+        }
 
-    /* Filtros (dropdowns e inputs) */
-    select,
-    input[type="text"] {
-        width: 100%;
-        padding: 5px;
-        border-radius: 5px;
-    }
+        tfoot select,
+        tfoot input {
+            width: 100%;
+            padding: 4px;
+        }
 
-    /* Arreglo del menú “Mostrar 10 / 25 / 50 / 100” */
-    .dataTables_length select {
-        color: white !important;                /* Texto blanco cuando está cerrado */
-        background-color: #0d3c78 !important;   /* Fondo azul cuando está cerrado */
-        border: 1px solid white;
-    }
+        /* --- ARREGLO DEL SELECT DE "MOSTRAR" --- */
+        select {
+            color: black !important;
+        }
 
-    .dataTables_length select option {
-        background: white !important;           /* Fondo blanco al abrir el dropdown */
-        color: black !important;                /* Texto negro para que se vea */
-    }
-
-    /* Buscar input */
-    .dataTables_filter input {
-        background: white;
-        color: black;
-        padding: 5px;
-        border-radius: 5px;
-    }
-
-</style>
-
+        /* Opciones del menú desplegable */
+        select option {
+            color: red !important; /* ← AHORA SE VEN PERFECTO */
+            background: white !important;
+        }
+    </style>
 </head>
+
 <body>
 
 <div class="header">
@@ -84,39 +69,17 @@
 </div>
 
 <div class="container">
-    <h2>
-        Listado: Coordinadores CCE, Delegados del 1-4,<br>
-        Seguridad Electoral, Transporte y Movilidad del Voto
-    </h2>
+    <h2>Listado: Coordinadores CCE, Delegados del 1-4,<br>
+        Seguridad Electoral, Transporte y Movilidad del Voto</h2>
 
     <table id="tabla" class="display" style="width:100%">
-        <thead>
-            <tr>
-                <th>Territorio</th>
-                <th>Region</th>
-                <th>Tipo</th>
-                <th>Recinto</th>
-                <th>Colegio</th>
-                <th>Cargo</th>
-                <th>Nombre</th>
-            </tr>
-
-            <!-- FILTROS SOLO EN ESTAS 3 COLUMNAS -->
-            <tr id="filtros">
-                <th></th>  <!-- Territorio -->
-                <th></th>  <!-- Región -->
-                <th></th>  <!-- Tipo (no filtro) -->
-                <th></th>  <!-- Recinto -->
-                <th></th>  <!-- no filtro -->
-                <th></th>  <!-- no filtro -->
-                <th></th>  <!-- no filtro -->
-            </tr>
-        </thead>
-        <tbody></tbody>
+        <tfoot>
+          <tr id="filtros"></tr>
+        </tfoot>
     </table>
 </div>
 
-<!-- JS -->
+<!-- JS Libraries -->
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
@@ -127,43 +90,62 @@ Papa.parse("data.csv", {
     header: true,
     complete: function(results) {
 
-        let tabla = $('#tabla').DataTable({
-            data: results.data,
-            columns: [
-                { data: "Territorio" },
-                { data: "Region" },
-                { data: "Tipo" },
-                { data: "Recinto" },
-                { data: "Colegio" },
-                { data: "Cargo" },
-                { data: "Nombre" }
-            ],
-            pageLength: 10,
-            orderCellsTop: true,
-            language: { 
-                url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json" 
+        // Crear columnas automáticamente
+        let columnas = Object.keys(results.data[0]).map(col => ({
+            title: col,
+            data: col
+        }));
+
+        // Crear filtros en footer
+        columnas.forEach(col => {
+            if (col === "Territorio" || col === "Region" || col === "Recinto") {
+                $("#filtros").append(`<th><select class="filtro" data-col="${col}">
+                    <option value="">(todos)</option></select></th>`);
+            } else {
+                $("#filtros").append(`<th><input type="text" placeholder="Filtrar ${col}"></th>`);
             }
         });
 
-        // === FILTROS DESPLEGABLES SOLO PARA TERRITORIO - REGION - RECINTO ===
+        // Inicializar DataTable
+        let tabla = $('#tabla').DataTable({
+            data: results.data,
+            columns: columnas,
+            pageLength: 10,    // ← MOSTRAR 10 POR DEFECTO
+            language: {
+                url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+            }
+        });
 
-        function crearFiltro(colIndex, nombreColumna) {
-            let select = $('<select><option value="">(todos)</option></select>')
-                .appendTo($("#filtros th").eq(colIndex))
-                .on("change", function() {
-                    tabla.column(colIndex).search(this.value).draw();
+        // Rellenar selects con valores únicos
+        tabla.columns().every(function() {
+            let nombreColumna = columnas[this.index()].title;
+
+            if (["Territorio", "Region", "Recinto"].includes(nombreColumna)) {
+
+                let select = $(`select[data-col="${nombreColumna}"]`);
+                let datos = this.data().unique().sort();
+
+                datos.each(v => {
+                    if (v.trim() !== "") {
+                        select.append(`<option value="${v}">${v}</option>`);
+                    }
                 });
 
-            let valores = [...new Set(results.data.map(row => row[nombreColumna]).filter(v => v && v.trim() !== ""))];
-            valores.sort().forEach(v => {
-                select.append(`<option value="${v}">${v}</option>`);
-            });
-        }
+                select.on("change", function() {
+                    tabla.column(select.closest('th').index())
+                         .search(this.value)
+                         .draw();
+                });
+            }
+        });
 
-        // Asignación de filtros
-        crearFiltro(0, "Territorio");  
-        crearFiltro(1, "Region");      
-        crearFiltro(3, "Recinto");     
+        // Filtros de texto normales
+        tabla.columns().every(function () {
+            let th = $(this.footer());
+            $('input', th).on('keyup change', () => {
+                this.search($('input', th).val()).draw();
+            });
+        });
     }
 });
 </script>
