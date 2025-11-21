@@ -1,175 +1,189 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Listado STDI San Cristóbal</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listado STDI</title>
 
-<!-- DataTables + Bootstrap -->
-<link href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css" rel="stylesheet">
-<link href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.dataTables.min.css" rel="stylesheet">
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 
-<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
-<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.print.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+    <!-- DataTables + Buttons -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
+
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+
+    <!-- PapaParse -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
 <style>
     body {
-        background-color: #0A2A66;
         font-family: Arial, sans-serif;
         margin: 0;
-        padding: 0;
+        background: white;
+    }
+
+    .header {
+        padding: 20px;
+        background: white;
+        text-align: left;
+    }
+
+    .logo {
+        max-width: 300px;
+    }
+
+    .container {
+        background: #083b79;
+        padding: 25px;
+        border-radius: 10px;
+        margin: 20px;
         color: white;
     }
 
-    .logo-container {
-        width: 100%;
-        text-align: left;
-        padding: 15px 25px 5px 25px;
-        background-color: white;
-    }
-
-    .logo-container img {
-        height: 95px;
-    }
-
-    .content-box {
-        margin: 20px;
-        background: #0A2A66;
-        padding: 25px;
-        border-radius: 12px;
-    }
-
-    h1 {
-        font-size: 28px;
-        margin-bottom: 20px;
-    }
-
-    .filtros {
-        margin-bottom: 15px;
-    }
-
-    select, button {
+    select {
         padding: 8px;
         border-radius: 5px;
-        border: none;
-        margin-right: 8px;
+        border: 1px solid #ccc;
+        font-size: 15px;
     }
 
-    button {
-        cursor: pointer;
-    }
-
-    #tabla td:hover {
-        background-color: #1db954 !important;
-        color: white !important;
+    table.dataTable tbody tr:hover {
+        background-color: #b7ffbf !important;
     }
 
     table.dataTable thead th {
+        background: #083b79 !important;
         color: white !important;
+        font-size: 16px;
     }
-</style>
-</head>
 
+    .dt-buttons button {
+        background: #094a9b !important;
+        border: none !important;
+        padding: 8px 15px !important;
+        border-radius: 5px !important;
+        color: white !important;
+        cursor: pointer;
+    }
+
+    #limpiar {
+        background: #d9534f;
+        border: none;
+        padding: 8px 13px;
+        color: white;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-left: 5px;
+    }
+
+</style>
+
+</head>
 <body>
 
-<!-- LOGO -->
-<div class="logo-container">
-    <img src="logo.png" alt="Logo STDI">
+<div class="header">
+    <img src="logo.png" class="logo">
 </div>
 
-<!-- CONTENIDO -->
-<div class="content-box">
-    <h1>Listado: Coordinadores CCE, Delegados del 1-4, Seguridad Electoral, Transporte y Movilidad del Voto</h1>
+<div class="container">
 
-    <div class="filtros">
-        <select id="filtroTerritorio"></select>
-        <select id="filtroRegion"></select>
-        <select id="filtroRecinto"></select>
-        <select id="filtroColegio"></select>
-        <select id="filtroCargo"></select>
+<h2>Listado: Coordinadores CCE, Delegados del 1-4,<br>
+Seguridad Electoral, Transporte y Movilidad del Voto</h2>
 
-        <button id="btnLimpiar">Limpiar filtros</button>
+<br>
 
-        <button id="exportExcel">Exportar Excel</button>
-        <button id="exportPDF">Exportar PDF</button>
-        <button onclick="window.print()">Imprimir</button>
-    </div>
+<!-- FILTROS SUPERIORES -->
+<select id="f_Territorio"><option value="">Territorio (todos)</option></select>
+<select id="f_Region"><option value="">Región (todos)</option></select>
+<select id="f_Recinto"><option value="">Recinto (todos)</option></select>
+<select id="f_Colegio"><option value="">Colegio (todos)</option></select>
+<select id="f_Cargo"><option value="">Cargo (todos)</option></select>
 
-    <table id="tabla" class="display" style="width:100%; color:white;">
-        <thead>
-            <tr>
-                <th>Territorio</th>
-                <th>Region</th>
-                <th>Tipo</th>
-                <th>Recinto</th>
-                <th>Colegio</th>
-                <th>Cargo</th>
-                <th>Nombre</th>
-                <th>Cédula</th>
-                <th>Celular</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
+<button id="limpiar">Limpiar filtros</button>
+
+<br><br>
+
+<table id="tabla" class="display" style="width:100%">
+    <thead>
+        <tr>
+            <th>Territorio</th>
+            <th>Region</th>
+            <th>Tipo</th>
+            <th>Recinto</th>
+            <th>Colegio</th>
+            <th>Cargo</th>
+            <th>Nombre</th>
+        </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
 </div>
 
 <script>
-$(document).ready(function () {
+Papa.parse("data.csv", {
+    download: true,
+    header: true,
+    skipEmptyLines: true,
+    complete: function(results) {
 
-    $.get("data.csv", function (data) {
-        let filas = data.split("\n").slice(1);
-        let dataset = [];
+        let cleanData = results.data.filter(row =>
+            Object.values(row).some(v => v !== null && v !== "")
+        );
 
-        filas.forEach(function (fila) {
-            let cols = fila.split(",");
-            if (cols.length >= 9) dataset.push(cols);
-        });
+        let columnas = Object.keys(cleanData[0]).map(col => ({
+            title: col,
+            data: col
+        }));
 
-        let tabla = $("#tabla").DataTable({
-            data: dataset,
-            pageLength: 25,        // DEFAULT EN 25
-            lengthMenu: [10, 25, 50, 100],
+        let tabla = $('#tabla').DataTable({
+            data: cleanData,
+            columns: columnas,
+            pageLength: 10,
+            order: [],
             dom: 'Bfrtip',
             buttons: [
-                { extend: "excelHtml5", text: "Exportar Excel" },
-                { extend: "pdfHtml5", text: "Exportar PDF" }
-            ]
+                { extend: 'excelHtml5', text: 'Exportar Excel' },
+                { extend: 'pdfHtml5', text: 'Exportar PDF' },
+                { extend: 'print', text: 'Imprimir' }
+            ],
+            language: {
+                url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
+            }
         });
 
-        // LLENAR FILTROS
-        function llenarFiltro(colIndex, selector) {
-            let valores = [...new Set(dataset.map(row => row[colIndex]).sort())];
-            $(selector).append(`<option value="">(todos)</option>`);
-            valores.forEach(v => $(selector).append(`<option>${v}</option>`));
-        }
+        let filtros = ["Territorio","Region","Recinto","Colegio","Cargo"];
 
-        llenarFiltro(0, "#filtroTerritorio");
-        llenarFiltro(1, "#filtroRegion");
-        llenarFiltro(3, "#filtroRecinto");
-        llenarFiltro(4, "#filtroColegio");
-        llenarFiltro(5, "#filtroCargo");
+        filtros.forEach(campo => {
+            let select = document.getElementById("f_" + campo);
 
-        // EVENTOS DE FILTRO
-        $("#filtroTerritorio").on("change", function () { tabla.column(0).search(this.value).draw(); });
-        $("#filtroRegion").on("change", function () { tabla.column(1).search(this.value).draw(); });
-        $("#filtroRecinto").on("change", function () { tabla.column(3).search(this.value).draw(); });
-        $("#filtroColegio").on("change", function () { tabla.column(4).search(this.value).draw(); });
-        $("#filtroCargo").on("change", function () { tabla.column(5).search(this.value).draw(); });
+            tabla.column(filtros.indexOf(campo)).data().unique().sort().each(function (d) {
+                if (d && d.trim() !== "")
+                    select.insertAdjacentHTML("beforeend", `<option value="${d}">${d}</option>`);
+            });
 
-        // LIMPIAR FILTROS
-        $("#btnLimpiar").click(function () {
-            $("select").val("");
-            tabla.search("").columns().search("").draw();
+            select.addEventListener("change", function () {
+                tabla.column(filtros.indexOf(campo)).search(this.value).draw();
+            });
         });
 
-    });
+        document.getElementById("limpiar").addEventListener("click", function() {
+            filtros.forEach(campo => {
+                document.getElementById("f_" + campo).value = "";
+                tabla.column(filtros.indexOf(campo)).search("");
+            });
+            tabla.order([]).draw();
+        });
+
+    }
 });
 </script>
+
 </body>
 </html>
+
