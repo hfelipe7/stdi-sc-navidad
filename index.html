@@ -50,16 +50,10 @@
             color: black !important;
         }
 
-        /* SELECTS EN NEGRO */
         select {
             width: 100%;
             padding: 5px;
-            color: black !important;         /* ← AQUÍ EL CAMBIO */
-            background: white!important;
-        }
-
-        tfoot th {
-            background: #0d3c78;
+            color: red !important; /* ← esto conserva los números visibles */
         }
     </style>
 </head>
@@ -67,14 +61,11 @@
 <body>
 
     <div class="header">
-        <img src="logo.png" class="logo" alt="Logo STDI">
+        <img src="logo.png" class="logo">
     </div>
 
     <div class="container">
-        <h2>
-            Listado: Coordinadores CCE, Delegados del 1-4,<br>
-            Seguridad Electoral, Transporte y Movilidad del Voto
-        </h2>
+        <h2>Listado: Coordinadores CCE, Delegados del 1-4,<br>Seguridad Electoral, Transporte y Movilidad del Voto</h2>
 
         <table id="tabla" class="display" style="width:100%">
             <thead>
@@ -88,85 +79,58 @@
                     <th>Nombre</th>
                 </tr>
             </thead>
-
-            <tfoot>
-                <tr id="filtros"></tr>
-            </tfoot>
-
             <tbody></tbody>
         </table>
     </div>
 
 <script>
-Papa.parse("data.csv", {
-    download: true,
-    header: true,
-    skipEmptyLines: true,
-    complete: function(results) {
+document.addEventListener("DOMContentLoaded", function () {
 
-        // ⭐ limpiar filas vacías o incompletas
-        let cleanData = results.data.filter(row =>
-            Object.values(row).some(v => v !== null && v !== "")
-        );
+    Papa.parse("data.csv", {
+        download: true,
+        header: true,
+        skipEmptyLines: true,
+        complete: function (results) {
 
-        // ⭐ agregar un índice para mantener orden original
-        cleanData = cleanData.map((row, idx) => ({ ...row, _ordenCSV: idx }));
+            const data = results.data;
+            const tbody = document.querySelector("#tabla tbody");
 
-        // Crear columnas automáticas
-        let columnas = Object.keys(cleanData[0])
-            .filter(c => c !== "_ordenCSV")
-            .map(col => ({
-                title: col,
-                data: col
-            }));
-
-        // filtros deseados
-        const filtros = ["Territorio", "Region", "Recinto"];
-
-        // Crear los select del footer
-        $("#filtros").empty();
-        columnas.forEach(col => {
-            if (filtros.includes(col.title)) {
-                $("#filtros").append(`
-                    <th>
-                        <select id="f_${col.title}">
-                            <option value="">(todos)</option>
-                        </select>
-                    </th>
-                `);
-            } else {
-                $("#filtros").append(`<th></th>`);
-            }
-        });
-
-        // ⭐ Inicializar DataTable SIN ordenar nada
-        let tabla = $('#tabla').DataTable({
-            data: cleanData,
-            columns: columnas,
-            pageLength: 10,
-            ordering: false, // ⭐ mantiene orden del CSV
-            language: {
-                url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
-            }
-        });
-
-        // ⭐ poblar selects
-        filtros.forEach((campo) => {
-            let select = document.getElementById("f_" + campo);
-            let colIndex = columnas.findIndex(c => c.title === campo);
-
-            tabla.column(colIndex).data().unique().sort().each(function (d) {
-                if (d && d.trim() !== "")
-                    select.insertAdjacentHTML("beforeend", `<option value="${d}">${d}</option>`);
+            // === CARGAR FILAS DEL CSV SIN ALTERAR ORDEN ===
+            data.forEach(row => {
+                let tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${row.Territorio || ""}</td>
+                    <td>${row.Region || ""}</td>
+                    <td>${row.Tipo || ""}</td>
+                    <td>${row.Recinto || ""}</td>
+                    <td>${row.Colegio || ""}</td>
+                    <td>${row.Cargo || ""}</td>
+                    <td>${row.Nombre || ""}</td>
+                `;
+                tbody.appendChild(tr);
             });
 
-            // aplicar filtro sin alterar orden
-            select.addEventListener("change", function () {
-                tabla.column(colIndex).search(this.value).draw(false);
+            // === ACTIVAR DATATABLES SIN ORDENAR AUTOMÁTICAMENTE ===
+            let tabla = $('#tabla').DataTable({
+                pageLength: 10,
+                ordering: false,     // ← evita reordenamiento
+                order: [],           // ← mantiene orden original
+                language: {
+                    lengthMenu: "Mostrar _MENU_ registros",
+                    search: "Buscar:"
+                }
             });
-        });
 
-    }
+            // === SI SE QUITA EL FILTRO, NO REORDENAR ===
+            tabla.on("search.dt", function () {
+                if (!tabla.search()) {
+                    tabla.order([]).draw(false);
+                }
+            });
+
+        }
+    });
+
 });
 </script>
 
