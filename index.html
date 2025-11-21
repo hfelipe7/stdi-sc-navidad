@@ -8,44 +8,74 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            background: #ffffff;
-        }
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        background: #ffffff;
+    }
 
-        .header {
-            background: #ffffff;
-            padding: 20px;
-        }
+    /* Encabezado con logo sobre fondo blanco */
+    .header {
+        background: #ffffff;
+        padding: 20px;
+    }
 
-        .logo {
-            max-width: 260px;
-            display: block;
-        }
+    .logo {
+        max-width: 260px;
+        display: block;
+    }
 
-        .container {
-            background: #0d3c78;
-            padding: 25px;
-            border-radius: 10px;
-            color: white;
-            margin: 20px;
-        }
+    /* Contenedor azul más fuerte con texto blanco */
+    .container {
+        background: #0d3c78;
+        padding: 25px;
+        border-radius: 10px;
+        color: white;
+        margin: 20px;
+    }
 
-        table.dataTable thead th {
-            color: white !important;
-        }
+    /* Encabezados de tabla */
+    table.dataTable thead th {
+        color: white !important;
+        background: #0d3c78 !important;
+    }
 
-        table.dataTable {
-            background: white !important;
-            color: black !important;
-        }
+    /* Cuerpo de la tabla con fondo blanco */
+    table.dataTable {
+        background: white !important;
+        color: black !important;
+    }
 
-        select {
-            width: 100%;
-            padding: 5px;
-        }
-    </style>
+    /* Filtros (dropdowns e inputs) */
+    select,
+    input[type="text"] {
+        width: 100%;
+        padding: 5px;
+        border-radius: 5px;
+    }
+
+    /* Arreglo del menú “Mostrar 10 / 25 / 50 / 100” */
+    .dataTables_length select {
+        color: white !important;                /* Texto blanco cuando está cerrado */
+        background-color: #0d3c78 !important;   /* Fondo azul cuando está cerrado */
+        border: 1px solid white;
+    }
+
+    .dataTables_length select option {
+        background: white !important;           /* Fondo blanco al abrir el dropdown */
+        color: black !important;                /* Texto negro para que se vea */
+    }
+
+    /* Buscar input */
+    .dataTables_filter input {
+        background: white;
+        color: black;
+        padding: 5px;
+        border-radius: 5px;
+    }
+
+</style>
+
 </head>
 <body>
 
