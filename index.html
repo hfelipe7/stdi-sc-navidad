@@ -1,98 +1,107 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Listado STDI</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Listado STDI San Cristóbal</title>
 
-<!-- jQuery -->
-<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<!-- DataTables + Bootstrap -->
+<link href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css" rel="stylesheet">
+<link href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.dataTables.min.css" rel="stylesheet">
 
-<!-- DataTables CSS -->
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
-
-<!-- DataTables JS -->
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
-
-<!-- JSZip y PDFMake -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
-
-<!-- PapaParse -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.print.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
 
 <style>
     body {
+        background-color: #0A2A66;
         font-family: Arial, sans-serif;
         margin: 0;
-        background: #f4f4f4;
-    }
-
-    .header {
-        background: white;
-        padding: 20px;
-        text-align: left;
-    }
-
-    .logo {
-        max-width: 260px;
-    }
-
-    .container {
-        background: #0d3c78;
+        padding: 0;
         color: white;
+    }
+
+    .logo-container {
+        width: 100%;
+        text-align: left;
+        padding: 15px 25px 5px 25px;
+        background-color: white;
+    }
+
+    .logo-container img {
+        height: 95px;
+    }
+
+    .content-box {
+        margin: 20px;
+        background: #0A2A66;
         padding: 25px;
         border-radius: 12px;
-        margin: 20px;
     }
 
-    table.dataTable tbody tr:hover {
-        background-color: #c8f7c5 !important; /* ⭐ hover verde suave */
+    h1 {
+        font-size: 28px;
+        margin-bottom: 20px;
     }
 
-    select {
-        padding: 6px;
-        border-radius: 6px;
-        font-size: 15px;
-        color: black;
+    .filtros {
+        margin-bottom: 15px;
+    }
+
+    select, button {
+        padding: 8px;
+        border-radius: 5px;
+        border: none;
+        margin-right: 8px;
+    }
+
+    button {
+        cursor: pointer;
+    }
+
+    #tabla td:hover {
+        background-color: #1db954 !important;
+        color: white !important;
+    }
+
+    table.dataTable thead th {
+        color: white !important;
     }
 </style>
 </head>
 
 <body>
 
-<div class="header">
-    <img src="logo.png" class="logo">
+<!-- LOGO -->
+<div class="logo-container">
+    <img src="logo.png" alt="Logo STDI">
 </div>
 
-<div class="container">
-    <h2>Listado: Coordinadores CCE, Delegados del 1-4,<br>Seguridad Electoral, Transporte y Movilidad del Voto</h2>
+<!-- CONTENIDO -->
+<div class="content-box">
+    <h1>Listado: Coordinadores CCE, Delegados del 1-4, Seguridad Electoral, Transporte y Movilidad del Voto</h1>
 
-    <!-- FILTROS -->
-    <div style="margin-bottom: 15px;">
-        <select id="fltTerritorio"><option value="">Territorio (todos)</option></select>
-        <select id="fltRegion"><option value="">Región (todos)</option></select>
-        <select id="fltRecinto"><option value="">Recinto (todos)</option></select>
-        <select id="fltColegio"><option value="">Colegio (todos)</option></select>
-        <select id="fltCargo"><option value="">Cargo (todos)</option></select>
+    <div class="filtros">
+        <select id="filtroTerritorio"></select>
+        <select id="filtroRegion"></select>
+        <select id="filtroRecinto"></select>
+        <select id="filtroColegio"></select>
+        <select id="filtroCargo"></select>
 
-        <button id="btnClear" style="
-            margin-left:10px;
-            background:#ff4444;
-            color:white;
-            border:none;
-            padding:8px 14px;
-            border-radius:6px;
-            cursor:pointer;">Limpiar filtros</button>
+        <button id="btnLimpiar">Limpiar filtros</button>
+
+        <button id="exportExcel">Exportar Excel</button>
+        <button id="exportPDF">Exportar PDF</button>
+        <button onclick="window.print()">Imprimir</button>
     </div>
 
-    <!-- TABLA -->
-    <table id="tabla" class="display" style="width:100%">
+    <table id="tabla" class="display" style="width:100%; color:white;">
         <thead>
             <tr>
                 <th>Territorio</th>
@@ -102,6 +111,8 @@
                 <th>Colegio</th>
                 <th>Cargo</th>
                 <th>Nombre</th>
+                <th>Cédula</th>
+                <th>Celular</th>
             </tr>
         </thead>
         <tbody></tbody>
@@ -109,71 +120,56 @@
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", function () {
+$(document).ready(function () {
 
-    Papa.parse("data.csv", {
-        download: true,
-        header: true,
-        skipEmptyLines: true,
-        complete: function (results) {
+    $.get("data.csv", function (data) {
+        let filas = data.split("\n").slice(1);
+        let dataset = [];
 
-            const data = results.data;
+        filas.forEach(function (fila) {
+            let cols = fila.split(",");
+            if (cols.length >= 9) dataset.push(cols);
+        });
 
-            let tabla = $('#tabla').DataTable({
-                data: data,
-                columns: [
-                    { data: "Territorio" },
-                    { data: "Region" },
-                    { data: "Tipo" },
-                    { data: "Recinto" },
-                    { data: "Colegio" },
-                    { data: "Cargo" },
-                    { data: "Nombre" }
-                ],
-                order: [], /* ⭐ Mantener orden original */
-                pageLength: 10,
-                dom: 'Bfrtip',
-                buttons: [
-                    { extend: "excel", text: "Exportar Excel" },
-                    { extend: "pdf", text: "Exportar PDF" },
-                    { extend: "print", text: "Imprimir" }
-                ],
-                language: {
-                    url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
-                }
-            });
+        let tabla = $("#tabla").DataTable({
+            data: dataset,
+            pageLength: 25,        // DEFAULT EN 25
+            lengthMenu: [10, 25, 50, 100],
+            dom: 'Bfrtip',
+            buttons: [
+                { extend: "excelHtml5", text: "Exportar Excel" },
+                { extend: "pdfHtml5", text: "Exportar PDF" }
+            ]
+        });
 
-            /* ⭐ Poblar filtros */
-            function llenarFiltro(colIndex, selectId) {
-                let colData = tabla.column(colIndex).data().unique().sort();
-                colData.each(v => {
-                    if (v && v.trim() !== "")
-                        document.getElementById(selectId)
-                            .insertAdjacentHTML("beforeend", `<option value="${v}">${v}</option>`);
-                });
-
-                document.getElementById(selectId).addEventListener("change", function () {
-                    tabla.column(colIndex).search(this.value).draw();
-                });
-            }
-
-            llenarFiltro(0, "fltTerritorio");
-            llenarFiltro(1, "fltRegion");
-            llenarFiltro(3, "fltRecinto");
-            llenarFiltro(4, "fltColegio");
-            llenarFiltro(5, "fltCargo");
-
-            /* ⭐ Limpiar filtros */
-            document.getElementById("btnClear").onclick = function () {
-                document.querySelectorAll("select").forEach(s => s.value = "");
-                tabla.search("").columns().search("").order([]).draw();
-            };
-
+        // LLENAR FILTROS
+        function llenarFiltro(colIndex, selector) {
+            let valores = [...new Set(dataset.map(row => row[colIndex]).sort())];
+            $(selector).append(`<option value="">(todos)</option>`);
+            valores.forEach(v => $(selector).append(`<option>${v}</option>`));
         }
-    });
 
+        llenarFiltro(0, "#filtroTerritorio");
+        llenarFiltro(1, "#filtroRegion");
+        llenarFiltro(3, "#filtroRecinto");
+        llenarFiltro(4, "#filtroColegio");
+        llenarFiltro(5, "#filtroCargo");
+
+        // EVENTOS DE FILTRO
+        $("#filtroTerritorio").on("change", function () { tabla.column(0).search(this.value).draw(); });
+        $("#filtroRegion").on("change", function () { tabla.column(1).search(this.value).draw(); });
+        $("#filtroRecinto").on("change", function () { tabla.column(3).search(this.value).draw(); });
+        $("#filtroColegio").on("change", function () { tabla.column(4).search(this.value).draw(); });
+        $("#filtroCargo").on("change", function () { tabla.column(5).search(this.value).draw(); });
+
+        // LIMPIAR FILTROS
+        $("#btnLimpiar").click(function () {
+            $("select").val("");
+            tabla.search("").columns().search("").draw();
+        });
+
+    });
 });
 </script>
-
 </body>
 </html>
