@@ -10,112 +10,95 @@
 
     <!-- DataTables -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
+
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+
+    <!-- JSZip para Excel -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+
+    <!-- PDFMake para PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
 
     <!-- PapaParse -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
+        body { 
+            margin: 0; 
+            font-family: Arial, sans-serif; 
             background: #ffffff;
-        }
-
-        .header {
-            background: #ffffff;
-            padding: 20px;
-        }
-
-        .logo {
-            max-width: 260px;
-            display: block;
         }
 
         .container {
             background: #0d3c78;
             padding: 25px;
-            border-radius: 10px;
             color: white;
+            border-radius: 8px;
             margin: 20px;
         }
 
-        table.dataTable thead th {
-            color: white !important;
-            background: #0d3c78 !important;
-        }
-
-        table.dataTable {
-            background: white;
-            color: black;
-        }
-
-        /* Hover verde */
         table.dataTable tbody tr:hover {
-            background-color: #d9fdd3 !important;
+            background-color: #b6ffb6 !important; /* VERDE CLARO */
         }
 
-        /* Selects */
-        select {
+        /* Filtros */
+        .filtros-row {
+            margin-bottom: 10px;
+        }
+
+        .filtros-row select {
             width: 100%;
-            padding: 5px;
-            font-size: 14px;
-            color: black;
-            background: white;
-            border-radius: 4px;
-        }
-
-        option {
-            color: black;
-            background: white;
-        }
-
-        select option:checked {
-            background: #ffffff !important;
+            padding: 4px;
             color: black !important;
+        }
+
+        /* Dropdown "Mostrar registros" */
+        .dataTables_length select {
+            color: black !important;
+        }
+
+        /* Encabezado tabla */
+        table.dataTable thead th {
+            background: #0d3c78 !important;
+            color: white !important;
         }
     </style>
 </head>
-
 <body>
 
-<div class="header">
-    <img src="logo.png" class="logo">
-</div>
-
 <div class="container">
+    <h2>
+        Listado: Coordinadores CCE, Delegados del 1-4,<br>
+        Seguridad Electoral, Transporte y Movilidad del Voto
+    </h2>
 
-    <h2>Listado: Coordinadores CCE, Delegados del 1-4,<br>
-        Seguridad Electoral, Transporte y Movilidad del Voto</h2>
+    <!-- FILTROS ARRIBA -->
+    <div class="filtros-row" style="display:flex; gap:10px;">
+        <select id="f_Territorio"><option value="">Territorio (todos)</option></select>
+        <select id="f_Region"><option value="">Región (todos)</option></select>
+        <select id="f_Recinto"><option value="">Recinto (todos)</option></select>
+        <select id="f_Colegio"><option value="">Colegio (todos)</option></select>
+        <select id="f_Cargo"><option value="">Cargo (todos)</option></select>
+    </div>
 
-    <table id="tabla" class="display" style="width:100%">
-
-        <!-- FILA DE FILTROS -->
-        <thead id="filtros">
-            <tr>
-                <th><select id="f_Territorio"><option value="">(todos)</option></select></th>
-                <th><select id="f_Region"><option value="">(todos)</option></select></th>
-                <th><select id="f_Recinto"><option value="">(todos)</option></select></th>
-                <th><select id="f_Colegio"><option value="">(todos)</option></select></th>
-                <th><select id="f_Cargo"><option value="">(todos)</option></select></th>
-                <th></th>
-                <th></th>
-            </tr>
-
-            <!-- CABECERAS REALES -->
+    <table id="tabla" class="display nowrap" style="width:100%;">
+        <thead>
             <tr>
                 <th>Territorio</th>
                 <th>Region</th>
+                <th>Tipo</th>
                 <th>Recinto</th>
                 <th>Colegio</th>
                 <th>Cargo</th>
-                <th>Tipo</th>
                 <th>Nombre</th>
             </tr>
         </thead>
-
         <tbody></tbody>
-
     </table>
 </div>
 
@@ -126,57 +109,68 @@ document.addEventListener("DOMContentLoaded", function () {
         download: true,
         header: true,
         skipEmptyLines: true,
+
         complete: function (results) {
 
             let data = results.data;
-            let tbody = document.querySelector("#tabla tbody");
-            tbody.innerHTML = "";
 
+            // ▶ LIMPIA FILAS VACÍAS
+            data = data.filter(row => Object.values(row).some(x => x !== ""));
+
+            let tbody = document.querySelector("#tabla tbody");
+
+            // ▶ CARGAR CSV EN LA TABLA
             data.forEach(row => {
-                if (row.Territorio) {
-                    tbody.innerHTML += `
-                        <tr>
-                            <td>${row.Territorio}</td>
-                            <td>${row.Region}</td>
-                            <td>${row.Recinto}</td>
-                            <td>${row.Colegio}</td>
-                            <td>${row.Cargo}</td>
-                            <td>${row.Tipo}</td>
-                            <td>${row.Nombre}</td>
-                        </tr>`;
-                }
+                let tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>${row.Territorio}</td>
+                    <td>${row.Region}</td>
+                    <td>${row.Tipo}</td>
+                    <td>${row.Recinto}</td>
+                    <td>${row.Colegio}</td>
+                    <td>${row.Cargo}</td>
+                    <td>${row.Nombre}</td>
+                `;
+                tbody.appendChild(tr);
             });
 
+            // ▶ ACTIVAR DATATABLES
             let tabla = $('#tabla').DataTable({
                 pageLength: 10,
-                order: [],
+                order: [], // Mantener orden del CSV
+                scrollX: true,
+
+                dom: 'Bfrtip',
+                buttons: [
+                    { extend: 'excelHtml5', text: 'Exportar Excel' },
+                    { extend: 'pdfHtml5', text: 'Exportar PDF' },
+                    { extend: 'print', text: 'Imprimir' }
+                ],
+
                 language: {
                     url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
                 }
             });
 
-            function agregarFiltro(campo, columna) {
-                let select = document.getElementById("f_" + campo);
+            // ▶ FILTROS
+            function cargarFiltro(idSelect, colIndex) {
+                let select = document.getElementById(idSelect);
 
-                tabla.column(columna).data().unique().sort().each(function (d) {
-                    if (d.trim() !== "")
-                        select.innerHTML += `<option value="${d}">${d}</option>`;
+                tabla.column(colIndex).data().unique().sort().each(function (val) {
+                    if (val.trim() !== "")
+                        select.innerHTML += `<option value="${val}">${val}</option>`;
                 });
 
                 select.addEventListener("change", function () {
-                    tabla.column(columna).search(this.value).draw();
+                    tabla.column(colIndex).search(this.value).draw();
                 });
             }
 
-            agregarFiltro("Territorio", 0);
-            agregarFiltro("Region", 1);
-            agregarFiltro("Recinto", 2);
-            agregarFiltro("Colegio", 3);
-            agregarFiltro("Cargo", 4);
-
-            tabla.on('search.dt', function () {
-                if (!tabla.search()) tabla.order([]).draw();
-            });
+            cargarFiltro("f_Territorio", 0);
+            cargarFiltro("f_Region",     1);
+            cargarFiltro("f_Recinto",    3);
+            cargarFiltro("f_Colegio",    4);
+            cargarFiltro("f_Cargo",      5);
         }
     });
 
