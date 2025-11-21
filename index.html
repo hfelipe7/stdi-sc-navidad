@@ -46,42 +46,78 @@
         }
 
         table.dataTable {
-            background: white !important;
-            color: black !important;
+            background: white;
+            color: black;
         }
 
+        /* Hover verde */
+        table.dataTable tbody tr:hover {
+            background-color: #d9fdd3 !important;
+        }
+
+        /* Selects */
         select {
             width: 100%;
             padding: 5px;
-            color: red !important; /* ← esto conserva los números visibles */
+            font-size: 14px;
+            color: black;
+            background: white;
+            border-radius: 4px;
+        }
+
+        option {
+            color: black;
+            background: white;
+        }
+
+        select option:checked {
+            background: #ffffff !important;
+            color: black !important;
         }
     </style>
 </head>
 
 <body>
 
-    <div class="header">
-        <img src="logo.png" class="logo">
-    </div>
+<div class="header">
+    <img src="logo.png" class="logo">
+</div>
 
-    <div class="container">
-        <h2>Listado: Coordinadores CCE, Delegados del 1-4,<br>Seguridad Electoral, Transporte y Movilidad del Voto</h2>
+<div class="container">
 
-        <table id="tabla" class="display" style="width:100%">
-            <thead>
-                <tr>
-                    <th>Territorio</th>
-                    <th>Region</th>
-                    <th>Tipo</th>
-                    <th>Recinto</th>
-                    <th>Colegio</th>
-                    <th>Cargo</th>
-                    <th>Nombre</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-    </div>
+    <h2>Listado: Coordinadores CCE, Delegados del 1-4,<br>
+        Seguridad Electoral, Transporte y Movilidad del Voto</h2>
+
+    <table id="tabla" class="display" style="width:100%">
+
+        <!-- FILA DE FILTROS -->
+        <thead id="filtros">
+            <tr>
+                <th><select id="f_Territorio"><option value="">(todos)</option></select></th>
+                <th><select id="f_Region"><option value="">(todos)</option></select></th>
+                <th><select id="f_Recinto"><option value="">(todos)</option></select></th>
+                <th><select id="f_Colegio"><option value="">(todos)</option></select></th>
+                <th><select id="f_Cargo"><option value="">(todos)</option></select></th>
+                <th></th>
+                <th></th>
+            </tr>
+
+            <!-- CABECERAS REALES -->
+            <tr>
+                <th>Territorio</th>
+                <th>Region</th>
+                <th>Recinto</th>
+                <th>Colegio</th>
+                <th>Cargo</th>
+                <th>Tipo</th>
+                <th>Nombre</th>
+            </tr>
+        </thead>
+
+        <tbody></tbody>
+
+    </table>
+</div>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
@@ -92,42 +128,55 @@ document.addEventListener("DOMContentLoaded", function () {
         skipEmptyLines: true,
         complete: function (results) {
 
-            const data = results.data;
-            const tbody = document.querySelector("#tabla tbody");
+            let data = results.data;
+            let tbody = document.querySelector("#tabla tbody");
+            tbody.innerHTML = "";
 
-            // === CARGAR FILAS DEL CSV SIN ALTERAR ORDEN ===
             data.forEach(row => {
-                let tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td>${row.Territorio || ""}</td>
-                    <td>${row.Region || ""}</td>
-                    <td>${row.Tipo || ""}</td>
-                    <td>${row.Recinto || ""}</td>
-                    <td>${row.Colegio || ""}</td>
-                    <td>${row.Cargo || ""}</td>
-                    <td>${row.Nombre || ""}</td>
-                `;
-                tbody.appendChild(tr);
+                if (row.Territorio) {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${row.Territorio}</td>
+                            <td>${row.Region}</td>
+                            <td>${row.Recinto}</td>
+                            <td>${row.Colegio}</td>
+                            <td>${row.Cargo}</td>
+                            <td>${row.Tipo}</td>
+                            <td>${row.Nombre}</td>
+                        </tr>`;
+                }
             });
 
-            // === ACTIVAR DATATABLES SIN ORDENAR AUTOMÁTICAMENTE ===
             let tabla = $('#tabla').DataTable({
                 pageLength: 10,
-                ordering: false,     // ← evita reordenamiento
-                order: [],           // ← mantiene orden original
+                order: [],
                 language: {
-                    lengthMenu: "Mostrar _MENU_ registros",
-                    search: "Buscar:"
+                    url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
                 }
             });
 
-            // === SI SE QUITA EL FILTRO, NO REORDENAR ===
-            tabla.on("search.dt", function () {
-                if (!tabla.search()) {
-                    tabla.order([]).draw(false);
-                }
-            });
+            function agregarFiltro(campo, columna) {
+                let select = document.getElementById("f_" + campo);
 
+                tabla.column(columna).data().unique().sort().each(function (d) {
+                    if (d.trim() !== "")
+                        select.innerHTML += `<option value="${d}">${d}</option>`;
+                });
+
+                select.addEventListener("change", function () {
+                    tabla.column(columna).search(this.value).draw();
+                });
+            }
+
+            agregarFiltro("Territorio", 0);
+            agregarFiltro("Region", 1);
+            agregarFiltro("Recinto", 2);
+            agregarFiltro("Colegio", 3);
+            agregarFiltro("Cargo", 4);
+
+            tabla.on('search.dt', function () {
+                if (!tabla.search()) tabla.order([]).draw();
+            });
         }
     });
 
