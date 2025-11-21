@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>STDI - Base de Datos</title>
 
-    <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 
     <style>
@@ -29,7 +28,7 @@
             border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        tfoot input {
+        tfoot input, tfoot select {
             width: 100%;
             padding: 3px;
             box-sizing: border-box;
@@ -38,74 +37,109 @@
 </head>
 <body>
 
-    <img src="logo.png" class="logo" alt="Logo STDI">
+<img src="logo.png" class="logo" alt="Logo STDI">
 
-    <div class="container">
-        <h2>
-            Listado: Coordinadores CCE, Delegados del 1-4,<br>
-            Seguridad Electoral, Transporte y Movilidad del Voto
-        </h2>
+<div class="container">
+    <h2>
+        Listado: Coordinadores CCE, Delegados del 1-4,<br>
+        Seguridad Electoral, Transporte y Movilidad del Voto
+    </h2>
 
-        <table id="tabla" class="display" style="width:100%">
-            <thead><tr id="encabezados"></tr></thead>
-            <tbody></tbody>
-            <tfoot><tr id="filtros"></tr></tfoot>
-        </table>
-    </div>
+    <table id="tabla" class="display" style="width:100%">
+        <thead><tr id="encabezados"></tr></thead>
+        <tbody></tbody>
+        <tfoot><tr id="filtros"></tr></tfoot>
+    </table>
+</div>
 
-    <!-- JS Libraries -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
-    <script>
-        Papa.parse("data.csv", {
-            download: true,
-            header: true,
-            skipEmptyLines: true,
-            complete: function(results) {
+<script>
+Papa.parse("data.csv", {
+    download: true,
+    header: true,
+    skipEmptyLines: true,
 
-                let data = results.data;
+    complete: function(results) {
 
-                // Evitar fallos si hay filas vacías
-                data = data.filter(row => Object.values(row).some(v => v !== ""));
+        let data = results.data.filter(row =>
+            Object.values(row).some(v => v !== "")
+        );
 
-                let columnas = Object.keys(data[0]).map(col => ({
-                    title: col,
-                    data: col
-                }));
+        let columnas = Object.keys(data[0]).map(col => ({
+            title: col,
+            data: col
+        }));
 
-                // Crear encabezados
-                columnas.forEach(col => {
-                    $("#encabezados").append(`<th>${col.title}</th>`);
-                    $("#filtros").append(`<th><input type="text" placeholder="Filtrar ${col.title}"></th>`);
-                });
+        columnas.forEach(col => {
+            $("#encabezados").append(`<th>${col.title}</th>`);
+        });
 
-                // Inicializar DataTable
-                let tabla = $('#tabla').DataTable({
-                    data: data,
-                    columns: columnas,
-                    pageLength: 100,
-                    language: { 
-                        url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
-                    }
-                });
+        columnas.forEach(col => {
 
-                // Filtros por columna
-                tabla.columns().every(function() {
-                    let that = this;
+            // FILTROS DESPLEGABLES EN COLUMNAS ESPECÍFICAS
+            if (["Territorio", "Region", "Recinto"].includes(col.title)) {
 
-                    $('input', this.footer()).on('keyup change', function() {
-                        if (that.search() !== this.value) {
-                            that.search(this.value).draw();
-                        }
-                    });
-                });
+                $("#filtros").append(`<th><select><option value="">(todos)</option></select></th>`);
 
+            } else {
+                $("#filtros").append(`<th><input type="text" placeholder="Filtrar ${col.title}"></th>`);
+            }
+
+        });
+
+        let tabla = $('#tabla').DataTable({
+            data: data,
+            columns: columnas,
+            pageLength: 100,
+            language: {
+                url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
             }
         });
-    </script>
+
+        // LLENAR SELECTS AUTOMÁTICAMENTE
+        tabla.columns().every(function(i) {
+
+            let colTitle = columnas[i].title;
+
+            if (["Territorio", "Region", "Recinto"].includes(colTitle)) {
+
+                let select = $('select', tabla.footer().children[0].cells[i]);
+
+                let valoresUnicos = new Set();
+
+                tabla
+                    .column(i)
+                    .data()
+                    .each(function(value) {
+                        if (value && value.trim() !== "" && value !== "N/A") {
+                            valoresUnicos.add(value.trim());
+                        }
+                    });
+
+                [...valoresUnicos].sort().forEach(v => {
+                    select.append(`<option value="${v}">${v}</option>`);
+                });
+
+                select.on('change', function() {
+                    tabla.column(i).search(this.value).draw();
+                });
+
+            } else {
+                // FILTROS DE TEXTO
+                $('input', this.footer()).on('keyup change', function() {
+                    if (tabla.column(i).search() !== this.value) {
+                        tabla.column(i).search(this.value).draw();
+                    }
+                });
+            }
+
+        });
+    }
+});
+</script>
 
 </body>
 </html>
-
