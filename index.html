@@ -2,10 +2,18 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>STDI - Base de Datos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listado STDI</title>
 
-    <!-- DataTables CSS -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+
+    <!-- DataTables -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+
+    <!-- PapaParse -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 
     <style>
         body {
@@ -25,7 +33,7 @@
         }
 
         .container {
-            background: #0d3c78; /* AZUL OSCURO */
+            background: #0d3c78;
             padding: 25px;
             border-radius: 10px;
             color: white;
@@ -33,9 +41,8 @@
         }
 
         table.dataTable thead th {
-            background: #0d3c78 !important;
             color: white !important;
-            font-weight: bold;
+            background: #0d3c78 !important;
         }
 
         table.dataTable {
@@ -43,110 +50,87 @@
             color: black !important;
         }
 
-        tfoot select,
-        tfoot input {
-            width: 100%;
-            padding: 4px;
-        }
-
-        /* --- ARREGLO DEL SELECT DE "MOSTRAR" --- */
         select {
-            color: black !important;
-        }
-
-        /* Opciones del menú desplegable */
-        select option {
-            color: red !important; /* ← AHORA SE VEN PERFECTO */
-            background: white !important;
+            width: 100%;
+            padding: 5px;
+            color: red !important;
         }
     </style>
 </head>
 
 <body>
 
-<div class="header">
-    <img src="logo.png" class="logo" alt="Logo STDI">
-</div>
+    <div class="header">
+        <img src="logo.png" class="logo">
+    </div>
 
-<div class="container">
-    <h2>Listado: Coordinadores CCE, Delegados del 1-4,<br>
-        Seguridad Electoral, Transporte y Movilidad del Voto</h2>
+    <div class="container">
+        <h2>Listado: Coordinadores CCE, Delegados del 1-4,<br>Seguridad Electoral, Transporte y Movilidad del Voto</h2>
 
-    <table id="tabla" class="display" style="width:100%">
-        <tfoot>
-          <tr id="filtros"></tr>
-        </tfoot>
-    </table>
-</div>
-
-<!-- JS Libraries -->
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+        <table id="tabla" class="display" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Territorio</th>
+                    <th>Region</th>
+                    <th>Tipo</th>
+                    <th>Recinto</th>
+                    <th>Colegio</th>
+                    <th>Cargo</th>
+                    <th>Nombre</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
 
 <script>
-Papa.parse("data.csv", {
-    download: true,
-    header: true,
-    complete: function(results) {
+document.addEventListener("DOMContentLoaded", function () {
 
-        // Crear columnas automáticamente
-        let columnas = Object.keys(results.data[0]).map(col => ({
-            title: col,
-            data: col
-        }));
+    Papa.parse("data.csv", {
+        download: true,
+        header: true,
+        complete: function (results) {
 
-        // Crear filtros en footer
-        columnas.forEach(col => {
-            if (col === "Territorio" || col === "Region" || col === "Recinto") {
-                $("#filtros").append(`<th><select class="filtro" data-col="${col}">
-                    <option value="">(todos)</option></select></th>`);
-            } else {
-                $("#filtros").append(`<th><input type="text" placeholder="Filtrar ${col}"></th>`);
-            }
-        });
+            const data = results.data;
+            let tbody = document.querySelector("#tabla tbody");
+            tbody.innerHTML = "";
 
-        // Inicializar DataTable
-        let tabla = $('#tabla').DataTable({
-            data: results.data,
-            columns: columnas,
-            pageLength: 10,    // ← MOSTRAR 10 POR DEFECTO
-            language: {
-                url: "https://cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json"
-            }
-        });
-
-        // Rellenar selects con valores únicos
-        tabla.columns().every(function() {
-            let nombreColumna = columnas[this.index()].title;
-
-            if (["Territorio", "Region", "Recinto"].includes(nombreColumna)) {
-
-                let select = $(`select[data-col="${nombreColumna}"]`);
-                let datos = this.data().unique().sort();
-
-                datos.each(v => {
-                    if (v.trim() !== "") {
-                        select.append(`<option value="${v}">${v}</option>`);
-                    }
-                });
-
-                select.on("change", function() {
-                    tabla.column(select.closest('th').index())
-                         .search(this.value)
-                         .draw();
-                });
-            }
-        });
-
-        // Filtros de texto normales
-        tabla.columns().every(function () {
-            let th = $(this.footer());
-            $('input', th).on('keyup change', () => {
-                this.search($('input', th).val()).draw();
+            // === CARGAR FILAS DEL CSV ===
+            data.forEach(row => {
+                if (row.Territorio) {  
+                    let tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>${row.Territorio}</td>
+                        <td>${row.Region}</td>
+                        <td>${row.Tipo}</td>
+                        <td>${row.Recinto}</td>
+                        <td>${row.Colegio}</td>
+                        <td>${row.Cargo}</td>
+                        <td>${row.Nombre}</td>
+                    `;
+                    tbody.appendChild(tr);
+                }
             });
-        });
-    }
+
+            // === ACTIVAR DATATABLES SOLO DESPUÉS DE CARGAR EL CSV ===
+            let tabla = $('#tabla').DataTable({
+                pageLength: 10,
+                order: [], // Mantener orden original
+                language: {
+                    lengthMenu: "Mostrar _MENU_ registros",
+                    search: "Buscar:"
+                }
+            });
+
+            // Restaurar el orden original al borrar filtros
+            tabla.on('search.dt', function () {
+                if (!tabla.search()) {
+                    tabla.order([]).draw();
+                }
+            });
+        }
+    });
+
 });
 </script>
 
